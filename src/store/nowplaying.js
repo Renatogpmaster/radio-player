@@ -1,148 +1,106 @@
 import { createStore } from 'vuex';
 import nowplayingService from '/src/services/nowplayingService.js';
-//import { FETCH_FAVORITES, FETCH_TAGS } from './actionTypes';
-//import { SET_FAVORITES, SET_TAGS } from './mutationTypes';
 
 export const state = {
-    stationId:0,
+    stationId: 0,
     stations: [],
     songs: [],
     trackList: [],
     nowplaying: [],
-    currentSong:[],
-    nextSong:[],
-    currentStation:[]
-    //searchText: ''
+    currentSong: [],
+    nextSong: [],
+    currentStation: []
 };
 
 export const actions = {
-    StationId({commit},stationId){
-        commit("setStationId",stationId);
+    setStationId({ commit }, stationId) {
+        commit("setStationId", stationId);
         commit("setNowplayingStation", stationId);
-
     },
-    async fetchNowplaying({ commit },stationId) {
-        console.time("fetchNowplaying")
-        console.log("%c fetchNowplaying" , 'background: blue; color: white')
-        let nowplaying = await nowplayingService.get();
-        return new Promise((resolve, reject) => {
-            try{
-                commit("setNowplaying",nowplaying);
-                if(!isNaN(stationId)) commit("setNowplayingStation", stationId);
-                resolve();
-            }catch (e) {
-                reject();
-            }
-
-        });
-
+    async fetchNowplaying({ commit }, stationId) {
+        try {
+            let nowplaying = await nowplayingService.get();
+            commit("setNowplaying", nowplaying);
+            if (!isNaN(stationId)) commit("setNowplayingStation", stationId);
+        } catch (e) {
+            console.error("Error fetching now playing:", e);
+        }
     },
-    async fetchStations ({commit })  {
-        console.time("fetchStations")
-        console.log("%c fetchStations" , 'background: blue; color: white')
-        let Station = await nowplayingService.getChannels();
-        commit("setStations",Station);
+    async fetchStations({ commit }) {
+        try {
+            let stations = await nowplayingService.getChannels();
+            commit("setStations", stations);
+        } catch (e) {
+            console.error("Error fetching stations:", e);
+        }
     },
-    async fetchSongs ({commit },stationId)  {
-        console.time("fetchSongs")
-        console.log("%c fetchSongs" , 'background: blue; color: white')
-        let Songs = await nowplayingService.getSongs(stationId);
-        return new Promise((resolve, reject) => {
-            commit("setSongs",Songs);resolve();
-        });
-
+    async fetchSongs({ commit }, stationId) {
+        try {
+            let songs = await nowplayingService.getSongs(stationId);
+            commit("setSongs", songs);
+        } catch (e) {
+            console.error("Error fetching songs:", e);
+        }
     },
-    resetSongs({commit }){
+    resetSongs({ commit }) {
         commit("resetSongs");
     }
-
-
 };
+
 export const getters = {
-    /*courrentSong : (state) => {
-        return state.currentSong;
+    getIDfromShortcode: (state) => (shortcode) => {
+        let found = state.nowplaying.find((d) => (d.station.shortcode === shortcode));
+        if (!found) return false;
+        return found.station.id;
     },
-    CurrentSong : (state) =>  {
-        let stationid = state.stationId
-        console.log("getters : CurrentSong",stationid)
-        return state.nowplaying.find( (d) => (stationid) => (d.station.id === stationid)).now_playing.song;
-    },*/
-    // SongsByStation : (state) => {
-    //     let stationid = state.stationId
-    //     console.log("getters : SongsByStation",stationid)
-    //     return state.nowplaying.find( (d) => (stationid) => (d.station.id === stationid)).songs ;
-    // },
-    getIDfromShortcode : (state) => (shortcode) =>{
-        let found = state.nowplaying.find( (d) => (d.station.shortcode === shortcode));
-        if( !found )  return false;
-        return found.station.id ;
-    },
-    hasSongs: (state) => () => { // Corrected to a function
+    hasSongs: (state) => {
         return !!Object.keys(state.songs).length;
     },
-    getBackground : (state) => () => {
-        console.log(state.currentSong);
-        if(state.currentSong.song)
-            return state.currentSong.song.art
-        else return "img/icon.png" ;
+    getBackground: (state) => {
+        if (state.currentSong && state.currentSong.song)
+            return state.currentSong.song.art;
+        else return "img/icon.png";
     },
-    getStations : (state) => () => {
-        let stations = [];
-        for(let s in state.nowplaying ){
-            stations.push(state.nowplaying[s].station);
-        }
-        return stations;
-        },
-
+    getStations: (state) => {
+        return state.nowplaying.map(np => np.station);
+    }
 };
 
 export const mutations = {
-    setStationId : (currentState, stationId) => {
+    setStationId: (currentState, stationId) => {
         currentState.stationId = stationId;
     },
-    setNowplaying : (currentState, nowplaying) => {
-        let stationId = currentState.stationId;
-        console.log("%c stationId :", 'background: green; color: white',stationId);
-        console.log("%c setNowplaying :", 'background: green; color: white',nowplaying);
-        console.timeEnd("fetchNowplaying")
+    setNowplaying: (currentState, nowplaying) => {
         currentState.nowplaying = nowplaying;
-        currentState.stations = nowplaying.map( (s) => { return s.station });
+        currentState.stations = nowplaying.map((s) => { return s.station });
     },
-    setNowplayingStation : (currentState,stationId) => {
+    setNowplayingStation: (currentState, stationId) => {
         let nowplaying = currentState.nowplaying;
-        if( !isNaN(stationId)){
-            let currentStation = nowplaying.find( (d) => d.station.id === stationId);
-            console.log("%c setNowplayingStation : currentStation", 'background: green; color: white',currentStation);
-            currentState.currentStation = currentStation.station;
-            currentState.currentSong = currentStation.now_playing;
-            if(currentStation.playing_next != null)
-                currentState.nextSong = currentStation.playing_next.song;
-            currentState.songs = currentStation.song_history;
+        if (!isNaN(stationId)) {
+            let currentStation = nowplaying.find((d) => d.station.id === stationId);
+            if (currentStation) {
+                currentState.currentStation = currentStation.station;
+                currentState.currentSong = currentStation.now_playing;
+                if (currentStation.playing_next != null)
+                    currentState.nextSong = currentStation.playing_next.song;
+                currentState.songs = currentStation.song_history;
+            }
         }
-
     },
-    setStations : (currentState, Stations) => {
-        console.log("%c setStations :", 'background: green; color: white',Stations);
-        console.timeEnd("fetchStations")
-        currentState.stations = Stations;
+    setStations: (currentState, stations) => {
+        currentState.stations = stations;
     },
-    setSongs: (currentState, Songs) =>{
-        console.log("%c setSongs :", 'background: green; color: white',Songs);
-        console.timeEnd("fetchSongs")
-        currentState.currentSong = Songs.now_playing;
-        console.log("%c setSongs : Songs.now_playing.song", 'background: blue; color: white',Songs.now_playing.song);
-
-        currentState.songs = Songs;
+    setSongs: (currentState, songs) => {
+        currentState.currentSong = songs.now_playing;
+        currentState.songs = songs;
     },
-    resetSongs: (currentState)=>{
-        currentState.songs = []
-        currentState.currentSong=[]
-
+    resetSongs: (currentState) => {
+        currentState.songs = [];
+        currentState.currentSong = [];
     }
-
 };
 
-export default{
+export default {
     namespaced: true,
     state,
     getters,
