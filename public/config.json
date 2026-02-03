@@ -1,31 +1,28 @@
 {
-  "api_url" : "https://demo.azuracast.com/api",
-  "title": "Joujma FM | Radio Station",
-  "description" : "Live Radio 24/7 Hits music Only test",
-  "manifest" : {
-    "short_name": "Joujma FM",
+  "api_url": "https://gym-media-azuracast.ouwgfl.easypanel.host/api",
+  "title": "Radio Gym",
+  "description": "A melhor energia para o seu treino.",
+  "manifest": {
+    "short_name": "Radio Gym",
     "orientation": "portrait",
     "display": "standalone",
     "start_url": "/?utm_source=pwa_homescreen",
-    "prompt_message": "Add a Home screen icon for easy access to our player",
-    "background_color": "#222336",
-    "theme_color": "#222336"
+    "prompt_message": "Instale o App Radio Gym agora!",
+    "background_color": "#000000",
+    "theme_color": "#000000"
   },
   "player": {
     "showLyrics": true
   },
-  "showPlaylist" : false,
-  "socialBtn" : false,
+  "showPlaylist": true,
+  "socialBtn": false,
   "meta": {
-    "url" : "https://player.jelliti.me",
-    "image" : "https://player.jelliti.me/img/icon.png",
-    "locale" : "US_en"
+    "url": "https://gym-media-azuracast.ouwgfl.easypanel.host",
+    "image": "https://gym-media-azuracast.ouwgfl.easypanel.host/static/img/generic_song.jpg",
+    "locale": "pt_BR"
   },
-  "twitter" : {
-    "username" : ""
-  },
-  "facebook" : {
-    "page_id" : ""
-  },
-  "stationsFilterById": [6]
+  "twitter": {
+    "site": "@radiogym",
+    "creator": "@radiogym"
+  }
 }
